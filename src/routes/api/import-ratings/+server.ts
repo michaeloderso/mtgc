@@ -30,15 +30,15 @@ export const POST: RequestHandler = async ({ request }) => {
 				const existingCard = await db
 					.select({ id: cards.id })
 					.from(cards)
-					.where(eq(cards.oracle_id, rating.oracle_id))
+					.where(eq(cards.oracleId, rating.oracleId))
 					.limit(1);
 
 				if (existingCard.length > 0) {
 					// Update existing card
 					await db
 						.update(cards)
-						.set({ interest_rating: rating.interest_rating })
-						.where(eq(cards.oracle_id, rating.oracle_id));
+						.set({ interestRating: rating.interestRating })
+						.where(eq(cards.oracleId, rating.oracleId));
 					updated++;
 				} else {
 					// Card doesn't exist in database, skip it

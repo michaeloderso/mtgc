@@ -15,6 +15,41 @@
       "when": 1759335369995,
       "tag": "0001_normal_vargas",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1759483862631,
+      "tag": "0002_dashing_pretty_boy",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1759486760309,
+      "tag": "0003_messy_inertia",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1759486938825,
+      "tag": "0004_charming_umar",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1759487922959,
+      "tag": "0005_sticky_lifeguard",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1759489616887,
+      "tag": "0006_lumpy_mulholland_black",
+      "breakpoints": true
     }
   ]
 }

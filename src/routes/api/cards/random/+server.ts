@@ -21,22 +21,20 @@ export const GET: RequestHandler = async ({ url }) => {
 		// Transform the database card to match the frontend interface
 		const transformedCard = {
 			id: card.id,
-			oracle_id: card.oracle_id,
+			oracleId: card.oracleId,
 			name: card.name,
-			oracle_text: card.oracle_text,
-			image_uri_png: card.image_uri_png,
-			prices: card.price_usd ? {
-				usd: card.price_usd
+			oracleText: card.oracleText,
+			imageUriPng: card.imageUriPng,
+			prices: card.priceUsd ? {
+				usd: card.priceUsd
 			} : undefined,
-			set_name: card.set_name,
+			setName: card.setName,
 			rarity: card.rarity,
-			colors: card.colors ? JSON.parse(card.colors) : undefined,
-			color_identity: card.color_identity ? JSON.parse(card.color_identity) : undefined,
 			power: card.power,
 			toughness: card.toughness,
 			artist: card.artist,
-			card_faces: card.card_faces ? JSON.parse(card.card_faces) : undefined,
-			interest_rating: card.interest_rating
+            cardFaces: card.cardFaces,
+			interestRating: card.interestRating
 		};
 		
 		return json({ success: true, card: transformedCard });

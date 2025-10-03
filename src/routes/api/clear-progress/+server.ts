@@ -8,7 +8,7 @@ export const POST: RequestHandler = async () => {
 		// Clear all interest ratings but keep the cards
 		const result = await db
 			.update(cards)
-			.set({ interest_rating: null });
+			.set({ interestRating: null });
 		
 		return json({
 			success: true,

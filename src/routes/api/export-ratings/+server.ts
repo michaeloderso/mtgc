@@ -8,11 +8,11 @@ export async function GET() {
 		// Get all cards that have been rated
 		const ratedCards = await db
 			.select({
-				oracle_id: cards.oracle_id,
-				interest_rating: cards.interest_rating
+				oracleId: cards.oracleId,
+				interestRating: cards.interestRating
 			})
 			.from(cards)
-			.where(isNotNull(cards.interest_rating));
+			.where(isNotNull(cards.interestRating));
 
 		return json({
 			success: true,

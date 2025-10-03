@@ -1,32 +1,28 @@
+import { primaryKey } from 'drizzle-orm/gel-core';
 import { sqliteTable, integer, text, real } from 'drizzle-orm/sqlite-core';
 
-export const user = sqliteTable('user', {
-	id: integer('id').primaryKey(),
-	age: integer('age')
-});
-
-export const cards = sqliteTable('cards', {
-	id: text('id').primaryKey(),
-	oracle_id: text('oracle_id').notNull(),
-	name: text('name').notNull(),
-	cmc: real('cmc').notNull().default(0),
-	oracle_text: text('oracle_text'),
-	colors: text('colors'), // JSON string array
-	color_identity: text('color_identity'), // JSON string array
-	keywords: text('keywords'), // JSON string array
-	set_name: text('set_name').notNull(),
-	set_code: text('set_code').notNull(),
-	rarity: text('rarity').notNull(),
-	image_uri_png: text('image_uri_png'),
-	price_usd: text('price_usd'),
-	legalities: text('legalities'), // JSON object
-	power: text('power'),
-	toughness: text('toughness'),
-	artist: text('artist'),
-	released_at: text('released_at'),
-	is_commander: integer('is_commander', { mode: 'boolean' }).notNull().default(true),
-	card_faces: text('card_faces'), // JSON array for double-faced cards
-	interest_rating: text('interest_rating'), // 'interesting', 'not_interesting', or null
-	created_at: text('created_at').notNull().default('CURRENT_TIMESTAMP'),
-	updated_at: text('updated_at').notNull().default('CURRENT_TIMESTAMP')
+export const cards = sqliteTable("cards", {
+	// Custom fields
+	internalId: integer("internal_id").primaryKey({ autoIncrement: true }),
+	// Scryfall fields (not fully listed)
+	id: text(),
+	oracleId: text("oracle_id"),
+	name: text().notNull(),
+	cmc: real().notNull().default(0),
+	oracleText: text("oracle_text"),
+	setName: text("set_name"),
+	setCode: text("set_code"),
+	rarity: text().notNull(),
+	imageUriPng: text("image_uri_png"),
+	priceUsd: text("price_usd"),
+	legalities: text({ mode: 'json' }),
+	power: text(),
+	toughness: text(),
+	artist: text(),
+	releasedAt: text("released_at"),
+	isCommander: integer("is_commander", { mode: "boolean" }).notNull().default(true),
+	cardFaces: text({ mode: 'json' }),
+	interestRating: text("interest_rating"), // 'interesting', 'not_interesting', or null
+	createdAt: text("created_at").notNull().default("CURRENT_TIMESTAMP"),
+	updatedAt: text("updated_at").notNull().default("CURRENT_TIMESTAMP")
 });
