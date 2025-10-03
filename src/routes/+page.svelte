@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import CardGrid from '$lib/components/CardGrid.svelte';
 	import RandomCardDisplay from '$lib/components/RandomCardDisplay.svelte';
+    import { getTest, postTest } from './data.remote';
 
 	interface CardFace {
 		name: string;
@@ -543,10 +544,31 @@
 		if (!colors || colors.length === 0) return 'Colorless';
 		return colors.join(', ');
 	}
+
+    const query = getTest();
+
+    const post = postTest("Hello from SvelteKit!");
 </script>
 
 <div class="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 py-8">
-	<div class="container mx-auto px-4">
+	
+    {#if query.error}
+        <p>oops!</p>
+    {:else if query.loading}
+        <p>loading...</p>
+    {:else}
+        <p>{query.current}</p>
+    {/if}
+
+    {#if post.error}
+        <p>oops!</p>
+    {:else if post.loading}
+        <p>loading...</p>
+    {:else}
+        <p>{post.current}</p>
+    {/if}
+
+    <div class="container mx-auto px-4">
 		
 		<!-- Auto-initialization loading state -->
 		{#if !databaseInitialized}
@@ -618,7 +640,7 @@
 						<div class="border-b border-white/20">
 							<nav class="flex space-x-8" aria-label="Tabs">
 								<button
-									on:click={() => switchViewMode('random')}
+									onclick={() => switchViewMode('random')}
 									class="py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 {viewMode == 'random' 
 										? 'border-blue-400 text-blue-300' 
 										: 'border-transparent text-gray-300 hover:text-white hover:border-gray-300'}"
@@ -626,7 +648,7 @@
 									🎲 Random Card Categorizer
 								</button>
 								<button
-									on:click={() => switchViewMode('interesting')}
+									onclick={() => switchViewMode('interesting')}
 									class="py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 {viewMode == 'interesting' 
 										? 'border-green-400 text-green-300' 
 										: 'border-transparent text-gray-300 hover:text-white hover:border-gray-300'}"
@@ -634,7 +656,7 @@
 									👍 Interesting Cards ({cardStats.interesting})
 								</button>
 								<button
-									on:click={() => switchViewMode('not_interesting')}
+									onclick={() => switchViewMode('not_interesting')}
 									class="py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 {viewMode == 'not_interesting' 
 										? 'border-red-400 text-red-300' 
 										: 'border-transparent text-gray-300 hover:text-white hover:border-gray-300'}"
@@ -642,7 +664,7 @@
 									👎 Not Interesting Cards ({cardStats.not_interesting})
 								</button>
 								<button
-									on:click={() => switchViewMode('manage')}
+									onclick={() => switchViewMode('manage')}
 									class="py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 {viewMode == 'manage' 
 										? 'border-yellow-400 text-yellow-300' 
 										: 'border-transparent text-gray-300 hover:text-white hover:border-gray-300'}"
@@ -704,7 +726,7 @@
 						<p class="text-gray-300 text-sm mb-4">Update your database with the latest cards from Scryfall</p>
 						
 						<button
-							on:click={startSync}
+							onclick={startSync}
 							disabled={syncing}
 							class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
 						>
@@ -744,14 +766,14 @@
 						
 						<div class="grid grid-cols-2 gap-3">
 							<button
-								on:click={exportRatings}
+								onclick={exportRatings}
 								disabled={exporting}
 								class="bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
 							>
 								{exporting ? '📤 Exporting...' : '📤 Export Ratings'}
 							</button>
 							<button
-								on:click={importRatings}
+								onclick={importRatings}
 								disabled={importing}
 								class="bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
 							>
@@ -796,14 +818,14 @@
 						
 						<div class="grid grid-cols-2 gap-3">
 							<button
-								on:click={clearProgress}
+								onclick={clearProgress}
 								disabled={clearingProgress}
 								class="bg-orange-600 hover:bg-orange-700 disabled:bg-orange-400 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
 							>
 								{clearingProgress ? '🗑️ Clearing...' : '🗑️ Clear Progress'}
 							</button>
 							<button
-								on:click={clearDatabase}
+								onclick={clearDatabase}
 								disabled={clearingDatabase}
 								class="bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
 							>
