@@ -9,9 +9,7 @@ import { env } from "$env/dynamic/private";
 import { multiPageQuery, prepareQuery } from "./encode";
 
 export class CardSyncService {
-	static async initializeDatabase(): Promise<
-		{ success: boolean; message: string }
-	> {
+	static async initializeDatabase(): Promise<{ success: boolean; message: string }> {
 		try {
 			// Check if the cards table exists by trying to query it
 			await db.select().from(cards).limit(1);

@@ -3,10 +3,8 @@
 
 	import type { Card, CardFace } from '$lib/types/scryfall';
 
-	export let card: Card | null = null;
-	export let loading = false;
-	export let rating = false;
-	export let error = '';
+	let { card, loading, rating, error } = $props();
+
 
 	const dispatch = createEventDispatcher();
 

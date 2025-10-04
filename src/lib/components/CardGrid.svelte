@@ -1,6 +1,9 @@
 <script lang="ts">
+	import type { Card } from '$lib/types/scryfall';
 
-	let {cards, loading, interest } = $props();
+	let { cards, loading, interest } = $props();
+
+
 
 
 </script>
@@ -15,10 +18,14 @@
 			<div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-200">
 				{#if card.imageUris?.png}
 					<img
-						src={card.imageUris.png}
+						src={card.imageUris?.png}
 						alt={card.name}
 						class="w-full h-64 object-cover"
 					/>
+				{:else}
+					<div class="w-full h-64 bg-gray-200 flex items-center justify-center">
+						<span class="text-gray-500">No Image Available</span>
+					</div>
 				{/if}
 				<div class="p-4">
 					<h3 class="font-bold text-gray-900 text-sm mb-2 line-clamp-2">{card.name}</h3>

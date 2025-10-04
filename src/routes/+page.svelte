@@ -2,85 +2,63 @@
     import { onMount } from "svelte";
     import CardGrid from "$lib/components/CardGrid.svelte";
     import RandomCardDisplay from "$lib/components/RandomCardDisplay.svelte";
-    import { getTest, postTest } from "./data.remote";
+    import * as remote from "./data.remote";
 
     import type { Card, CardFace } from "$lib/types/scryfall";
 
-    let card: Card | null = null;
-    let loading = false;
-    let rating = false; // New state for rating process
-    let error = "";
-    let localCardCount = 0;
-    let cardStats = {
+    let cards: Array<Card> = $state([] as Card[]);
+
+    let interestingCards: Array<Card> = $derived(cards.filter((c) => c.interestRating === "interesting"));
+    let notInterestingCards: Array<Card> = $derived(cards.filter((c) => c.interestRating === "not_interesting"));
+    let cardStats = $state({
         total: 0,
         interesting: 0,
-        not_interesting: 0,
+        notInteresting: 0,
         unrated: 0,
-    };
-    let viewMode = "random" as
+    });
+
+
+    let card: Card | null = $state(null);
+    let loading = $state(false);
+    let rating = $state(false); // New state for rating process
+    let error = $state("");
+    let localCardCount = $state(0);
+
+    let viewMode = $state("random" as
         | "random"
         | "interesting"
         | "not_interesting"
-        | "manage";
-    let interestingCards: Card[] = [];
-    let notInterestingCards: Card[] = [];
-    let loadingGrid = false;
-    let databaseInitialized = false;
-    let initializing = false;
+        | "manage"
+    );
+
+    let loadingGrid = $state(false);
 
     // Card preloading system
-    let cardQueue: Card[] = [];
-    let preloading = false;
+    let cardQueue: Card[] = $state([]);
+    let preloading = $state(false);
     const QUEUE_TARGET_SIZE = 8; // Keep 8 cards preloaded
     const QUEUE_REFILL_THRESHOLD = 3; // Refill when queue drops to 3 cards
 
     // Admin/sync functionality
-    let syncing = false;
-    let syncResult = "";
-    let syncError = "";
-    let syncProgress = { processed: 0, total: 0, currentCard: "" };
-    let showUpdateSection = false;
+    let syncing = $state(false);
+    let syncResult = $state("");
+    let syncError = $state("");
+    let syncProgress = $state({ processed: 0, total: 0, currentCard: "" });
+    let showUpdateSection = $state(false);
 
     // Import/export functionality
-    let importing = false;
-    let exporting = false;
-    let importResult = "";
-    let exportResult = "";
-    let importError = "";
-    let exportError = "";
+    let importing = $state(false);
+    let exporting = $state(false);
+    let importResult = $state("");
+    let exportResult = $state("");
+    let importError = $state("");
+    let exportError = $state("");
 
     // Clear functionality
-    let clearingDatabase = false;
-    let clearingProgress = false;
-    let clearResult = "";
-    let clearError = "";
-
-    async function initializeDatabase() {
-        initializing = true;
-        error = "";
-
-        try {
-            const response = await fetch("/api/cards", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ action: "init" }),
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                databaseInitialized = true;
-                await checkLocalDatabase();
-            } else {
-                error = data.message;
-            }
-        } catch (err) {
-            error = "Failed to initialize database. Please try again.";
-            console.error("Database initialization error:", err);
-        } finally {
-            initializing = false;
-        }
-    }
+    let clearingDatabase = $state(false);
+    let clearingProgress = $state(false);
+    let clearResult = $state("");
+    let clearError = $state("");
 
     async function checkLocalDatabase() {
         try {
@@ -105,7 +83,7 @@
                 cardStats = {
                     total: 0,
                     interesting: 0,
-                    not_interesting: 0,
+                    notInteresting: 0,
                     unrated: 0,
                 };
             }
@@ -115,7 +93,7 @@
             cardStats = {
                 total: 0,
                 interesting: 0,
-                not_interesting: 0,
+                notInteresting: 0,
                 unrated: 0,
             };
         }
@@ -215,10 +193,6 @@
         }
     }
 
-    function clearCardQueue() {
-        cardQueue = [];
-        console.log("Card queue cleared");
-    }
 
     async function fetchCardsByRating(
         rating: "interesting" | "not_interesting",
@@ -238,26 +212,6 @@
         } catch (err) {
             console.error("Error fetching cards by rating:", err);
             return [];
-        }
-    }
-
-    async function switchViewMode(
-        newMode: "random" | "interesting" | "not_interesting" | "manage",
-    ) {
-        viewMode = newMode;
-
-        if (newMode === "interesting" || newMode === "not_interesting") {
-            loadingGrid = true;
-            try {
-                const cards = await fetchCardsByRating(newMode);
-                if (newMode === "interesting") {
-                    interestingCards = cards;
-                } else {
-                    notInterestingCards = cards;
-                }
-            } finally {
-                loadingGrid = false;
-            }
         }
     }
 
@@ -445,123 +399,54 @@
     }
 
     async function clearDatabase() {
-        if (
-            !confirm(
-                "⚠️ This will permanently delete ALL cards from the database. Are you sure?",
-            )
-        ) {
+        if (!confirm("⚠️ This will permanently delete ALL cards from the database. Are you sure?")) {
             return;
         }
 
-        clearingDatabase = true;
-        clearError = "";
-        clearResult = "";
-
-        try {
-            const response = await fetch("/api/clear-database", {
-                method: "POST",
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                clearResult = data.message;
-                // Reset all state
-                localCardCount = 0;
-                cardStats = {
-                    total: 0,
-                    interesting: 0,
-                    not_interesting: 0,
-                    unrated: 0,
-                };
-                card = null;
-                cardQueue = [];
-                interestingCards = [];
-                notInterestingCards = [];
-            } else {
-                clearError = data.message;
-            }
-        } catch (err) {
-            clearError = "Failed to clear database. Please try again.";
-            console.error("Clear database error:", err);
-        } finally {
-            clearingDatabase = false;
-        }
+        remote.clearDatabase();
+        cardStats = await remote.getStats();
     }
 
     async function clearProgress() {
-        if (
-            !confirm(
-                "⚠️ This will remove all your card ratings but keep the cards. Are you sure?",
-            )
-        ) {
+        if (!confirm("⚠️ This will remove all your card ratings but keep the cards. Are you sure?")) {
             return;
         }
 
-        clearingProgress = true;
-        clearError = "";
-        clearResult = "";
-
-        try {
-            const response = await fetch("/api/clear-progress", {
-                method: "POST",
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                clearResult = data.message;
-                // Reset rating-related state
-                cardStats = {
-                    total: cardStats.total,
-                    interesting: 0,
-                    not_interesting: 0,
-                    unrated: cardStats.total,
-                };
-                interestingCards = [];
-                notInterestingCards = [];
-                // Clear current card rating if it exists
-                if (card) {
-                    card.interestRating = null;
-                }
-            } else {
-                clearError = data.message;
-            }
-        } catch (err) {
-            clearError = "Failed to clear progress. Please try again.";
-            console.error("Clear progress error:", err);
-        } finally {
-            clearingProgress = false;
-        }
+        remote.clearProgress();
+        cardStats = await remote.getStats();
     }
 
-    // Helper functions for double-faced cards
-    function isDoubleFaced(card: Card): boolean {
-        return !!(card.cardFaces && card.cardFaces.length >= 2);
-    }
 
-    function getCardName(card: Card): string {
-        if (isDoubleFaced(card) && card.cardFaces) {
-            return `${card.cardFaces[0].name} // ${card.cardFaces[1].name}`;
-        }
-        return card.name;
-    }
 
     onMount(async () => {
         // Automatically initialize database on app load
-        await initializeDatabase();
         await checkLocalDatabase();
+        cardStats = await remote.getStats();
         fetchRandomCard();
     });
 
-    function formatColors(colors: string[] | undefined): string {
-        if (!colors || colors.length === 0) return "Colorless";
-        return colors.join(", ");
+
+    async function switchViewMode(newMode: "random" | "interesting" | "not_interesting" | "manage",) {
+        viewMode = newMode;
+
+        if (newMode === "interesting" || newMode === "not_interesting") {
+            loadingGrid = true;
+            try {
+                const cards = await fetchCardsByRating(newMode);
+                if (newMode === "interesting") {
+                    interestingCards = cards;
+                } else {
+                    notInterestingCards = cards;
+                }
+            } finally {
+                loadingGrid = false;
+            }
+        }
     }
 
-    const query = getTest();
 
-    const post = postTest("Hello from SvelteKit!");
+    const query = remote.getTest();
+    const post = remote.postTest("Hello from SvelteKit!");
 </script>
 
 <div
@@ -609,7 +494,7 @@
                         </div>
                         <div class="bg-red-500/20 rounded-lg p-2 text-center">
                             <p class="text-xl font-bold text-red-300">
-                                {cardStats.not_interesting.toLocaleString()}
+                                {cardStats.notInteresting.toLocaleString()}
                             </p>
                             <p class="text-xs text-gray-300">Not Interesting</p>
                         </div>
@@ -654,7 +539,7 @@
                                     ? 'border-red-400 text-red-300'
                                     : 'border-transparent text-gray-300 hover:text-white hover:border-gray-300'}"
                             >
-                                👎 Not Interesting Cards ({cardStats.not_interesting})
+                                👎 Not Interesting Cards ({cardStats.notInteresting})
                             </button>
                             <button
                                 onclick={() => switchViewMode("manage")}
@@ -688,6 +573,7 @@
                                             | "interesting"
                                             | "not_interesting",
                                     )}
+                                    
                                 on:showUpdate={() => (showUpdateSection = true)}
                             />
                         </div>
@@ -939,6 +825,33 @@
         </div>
         <!-- End of flex container -->
     </div>
-    <!-- End of container -->
+    {#if interestingCards.length > 0}
+	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+		{#each interestingCards as card}
+			<div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-200">
+				{#if card.imageUris?.png}
+					<img
+						src={card.imageUris?.png}
+						alt={card.name}
+						class="w-full h-64 object-cover"
+					/>
+				{:else}
+					<div class="w-full h-64 bg-gray-200 flex items-center justify-center">
+						<span class="text-gray-500">No Image Available</span>
+					</div>
+				{/if}
+				<div class="p-4">
+					<h3 class="font-bold text-gray-900 text-sm mb-2 line-clamp-2">{card.name}</h3>
+					{#if card.prices?.usd}
+						<p class="text-sm text-green-600 font-semibold">${card.prices.usd}</p>
+					{/if}
+				</div>
+			</div>
+		{/each}
+	</div>
+{:else}
+	<div class="text-center text-white">
+		<p class="text-xl mb-4">No cards yet!</p>
+	</div>
+{/if}
 </div>
-<!-- End of main bg div -->
