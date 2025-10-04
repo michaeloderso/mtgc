@@ -547,31 +547,6 @@
         return card.name;
     }
 
-    function getCardData(card: Card, faceIndex: number = 0) {
-        if (
-            isDoubleFaced(card) &&
-            card.cardFaces &&
-            card.cardFaces[faceIndex]
-        ) {
-            const face = card.cardFaces[faceIndex];
-            return {
-                name: face.name,
-                oracleText: face.oracleText,
-                imageUriPng: face.imageUris?.png,
-                colors: face.colors,
-                power: face.power,
-                toughness: face.toughness,
-            };
-        }
-        return {
-            name: card.name,
-            oracleText: card.oracleText,
-            imageUriPng: card.imageUriPng,
-            power: card.power,
-            toughness: card.toughness,
-        };
-    }
-
     onMount(async () => {
         // Automatically initialize database on app load
         await initializeDatabase();
@@ -723,8 +698,7 @@
                             <CardGrid
                                 cards={interestingCards}
                                 loading={loadingGrid}
-                                emptyMessage="No interesting cards yet!"
-                                emptySubMessage="Rate some cards as interesting to see them here."
+                                interest="interesting"
                             />
                         </div>
 
@@ -734,8 +708,7 @@
                             <CardGrid
                                 cards={notInterestingCards}
                                 loading={loadingGrid}
-                                emptyMessage="No not interesting cards yet!"
-                                emptySubMessage="Rate some cards as not interesting to see them here."
+                                interest="not interesting"
                             />
                         </div>
 

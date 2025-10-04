@@ -1,34 +1,7 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 
-	interface CardFace {
-		name: string;
-		mana_cost?: string;
-		type_line?: string;
-		oracle_text?: string;
-		colors?: string[];
-		power?: string;
-		toughness?: string;
-		image_uri_png?: string;
-	}
-
-	interface Card {
-		id: string;
-		name: string;
-		oracle_text?: string;
-		mana_cost?: string;
-		type_line?: string;
-		colors?: string[];
-		color_identity?: string[];
-		power?: string;
-		toughness?: string;
-		image_uri_png?: string;
-		card_faces?: CardFace[];
-		prices?: {
-			usd?: string;
-		};
-		interest_rating?: 'interesting' | 'not_interesting' | null;
-	}
+	import type { Card, CardFace } from '$lib/types/scryfall';
 
 	export let card: Card | null = null;
 	export let loading = false;
@@ -38,21 +11,21 @@
 	const dispatch = createEventDispatcher();
 
 	function isDoubleFaced(card: Card): boolean {
-		return Boolean(card.card_faces && card.card_faces.length >= 2);
+		return Boolean(card.cardFaces && card.cardFaces.length >= 2);
 	}
 
 	function getCardName(card: Card): string {
-		if (isDoubleFaced(card) && card.card_faces) {
-			return card.card_faces.map(face => face.name).join(' // ');
+		if (isDoubleFaced(card) && card.cardFaces) {
+			return card.cardFaces.map(face => face.name).join(' // ');
 		}
 		return card.name;
 	}
 
 	function getCardImage(card: Card): string | undefined {
-		if (isDoubleFaced(card) && card.card_faces && card.card_faces[0]) {
-			return card.card_faces[0].image_uri_png;
+		if (isDoubleFaced(card) && card.cardFaces && card.cardFaces[0]) {
+			return card.cardFaces[0].imageUris?.png;
 		}
-		return card.image_uri_png;
+		return card.imageUris?.png;
 	}
 
 	function handleRandomCard() {
@@ -70,7 +43,7 @@
 		<div class="bg-white/10 backdrop-blur-sm rounded-lg p-4 shadow-lg">
 			<div class="flex justify-center gap-3">
 				<button
-					on:click={handleRandomCard}
+					onclick={handleRandomCard}
 					disabled={loading}
 					class="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 shadow-lg"
 				>
@@ -78,16 +51,16 @@
 				</button>
 				{#if card}
 					<button
-						on:click={() => handleRateCard('interesting')}
+						onclick={() => handleRateCard('interesting')}
 						disabled={rating}
-						class="px-6 py-3 rounded-lg font-semibold transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed {card.interest_rating === 'interesting' ? 'bg-green-600 text-white' : 'bg-green-600/30 text-green-200 hover:bg-green-600/50'}"
+						class="px-6 py-3 rounded-lg font-semibold transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed {card.interestRating === 'interesting' ? 'bg-green-600 text-white' : 'bg-green-600/30 text-green-200 hover:bg-green-600/50'}"
 					>
 						{rating ? '⏳' : '👍'} Interesting
 					</button>
 					<button
-						on:click={() => handleRateCard('not_interesting')}
+						onclick={() => handleRateCard('not_interesting')}
 						disabled={rating}
-						class="px-6 py-3 rounded-lg font-semibold transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed {card.interest_rating === 'not_interesting' ? 'bg-red-600 text-white' : 'bg-red-600/30 text-red-200 hover:bg-red-600/50'}"
+						class="px-6 py-3 rounded-lg font-semibold transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed {card.interestRating === 'not_interesting' ? 'bg-red-600 text-white' : 'bg-red-600/30 text-red-200 hover:bg-red-600/50'}"
 					>
 						{rating ? '⏳' : '👎'} Not Interesting
 					</button>
@@ -112,11 +85,11 @@
 					<!-- Double-faced card: show both images side by side -->
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
 						{#each [0, 1] as faceIndex}
-							{#if card.card_faces && card.card_faces[faceIndex]?.image_uri_png}
+							{#if card.cardFaces && card.cardFaces[faceIndex]?.imageUris?.png}
 								<div class="flex flex-col items-center">
 									<img
-										src={card.card_faces[faceIndex].image_uri_png}
-										alt={card.card_faces[faceIndex].name}
+										src={card.cardFaces[faceIndex].imageUris?.png}
+										alt={card.cardFaces[faceIndex].name}
 										class="w-full max-w-xs h-auto object-cover rounded-lg shadow-lg"
 									/>
 									<p class="text-sm text-gray-600 mt-2 font-medium">
@@ -156,7 +129,7 @@
 			{#if error.includes('No commander cards found')}
 				<div class="mt-2">
 					<button 
-						on:click={() => dispatch('showUpdate')}
+						onclick={() => dispatch('showUpdate')}
 						class="underline hover:text-red-200"
 					>
 						Update database now
